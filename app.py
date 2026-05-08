@@ -1,6 +1,8 @@
 from openai import OpenAI
 import streamlit as st
 from streamlit_js_eval import streamlit_js_eval
+from prompts.interview_prompts import build_interview_prompt
+from prompts.feedback_prompts import build_feedback_prompt
 
 st.set_page_config(page_title="Chat Streamlit", page_icon="speech_balloon")
 st.title("ChatBot")
@@ -85,7 +87,7 @@ if st.session_state.setup_complete and not st.session_state.feedback_shown and n
         """
         Comience por presentarse.
         """,
-        icon="🚨"
+        icon="👋🏻"
     )
     client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
@@ -96,10 +98,7 @@ if st.session_state.setup_complete and not st.session_state.feedback_shown and n
     if not st.session_state.messages:
         st.session_state.messages = [{
             "role": "system", 
-            "content": (f"Eres un ejecutivo de recursos humanos que entrevista a un candidato llamado {st.session_state['name']} "
-                        f"con experiencia {st.session_state['experience']} y habilidades {st.session_state['skills']}. " 
-                        f"Debes entrevistarlo para el puesto {st.session_state['level']} {st.session_state['position']} " 
-                        f"en la empresa {st.session_state['company']}.")
+            "content": build_interview_prompt(name=st.session_state.name, experience=st.session_state.experience, company=st.session_state.company, position=st.session_state.position, level=st.session_state.level, skills=st.session_state.skills)
             }]
 
     for message in st.session_state.messages:
@@ -144,17 +143,7 @@ if st.session_state.feedback_shown:
 
     feedback_completion = feedback_client.chat.completions.create(
         model = "gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": """ 
-            Eres una herramienta útil que proporciona retroalimentación sobre el desempeño del entrevistado.
-            Antes de dar tu retroalimentación, califica del 1 al 10.
-            Sigue este formato:
-            Calificación general: //Tu calificación
-            Retroalimentación: //Aquí escribe tu retroalimentación
-            Solo proporciona la retroalimentación; no hagas preguntas adicionales.
-            """},
-            {"role": "user", "content": f"Esta es la entrevista que debes evaluar. Eres solo una herramienta y no debes entablar una conversación: {conversation_history}"}
-        ],
+        messages=build_feedback_prompt(conversation_history),
         temperature=1
     )
 
