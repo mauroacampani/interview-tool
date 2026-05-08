@@ -35,7 +35,7 @@ Esta aplicación simula una entrevista de trabajo real realizada por un ejecutiv
 
 ```bash
 git clone https://github.com/mauroacampani/interview-tool.git
-cd git clone https://github.com/mauroacampani/interview-tool.git
+cd interview-tool/
 
 ```
 
